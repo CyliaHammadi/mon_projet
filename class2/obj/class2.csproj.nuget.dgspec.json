@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\Cylia\\meme_generator\\class2\\class2.csproj": {}
+    "C:\\Users\\Cylia\\Desktop\\project\\meme_generator\\class2\\class2.csproj": {}
   },
   "projects": {
-    "C:\\Users\\Cylia\\meme_generator\\class2\\class2.csproj": {
+    "C:\\Users\\Cylia\\Desktop\\project\\meme_generator\\class2\\class2.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\Cylia\\meme_generator\\class2\\class2.csproj",
+        "projectUniqueName": "C:\\Users\\Cylia\\Desktop\\project\\meme_generator\\class2\\class2.csproj",
         "projectName": "class2",
-        "projectPath": "C:\\Users\\Cylia\\meme_generator\\class2\\class2.csproj",
+        "projectPath": "C:\\Users\\Cylia\\Desktop\\project\\meme_generator\\class2\\class2.csproj",
         "packagesPath": "C:\\Users\\Cylia\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\Cylia\\meme_generator\\class2\\obj\\",
+        "outputPath": "C:\\Users\\Cylia\\Desktop\\project\\meme_generator\\class2\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\Cylia\\AppData\\Roaming\\NuGet\\NuGet.Config"

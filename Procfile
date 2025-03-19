@@ -1,0 +1,1 @@
+web: gunicorn meme_generator.wsgi --log-file -
