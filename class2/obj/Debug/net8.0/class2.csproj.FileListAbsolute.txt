@@ -1,0 +1,14 @@
+C:\Users\Cylia\meme_generator\class2\bin\Debug\net8.0\class2.exe
+C:\Users\Cylia\meme_generator\class2\bin\Debug\net8.0\class2.deps.json
+C:\Users\Cylia\meme_generator\class2\bin\Debug\net8.0\class2.runtimeconfig.json
+C:\Users\Cylia\meme_generator\class2\bin\Debug\net8.0\class2.dll
+C:\Users\Cylia\meme_generator\class2\bin\Debug\net8.0\class2.pdb
+C:\Users\Cylia\meme_generator\class2\obj\Debug\net8.0\class2.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\Cylia\meme_generator\class2\obj\Debug\net8.0\class2.AssemblyInfoInputs.cache
+C:\Users\Cylia\meme_generator\class2\obj\Debug\net8.0\class2.AssemblyInfo.cs
+C:\Users\Cylia\meme_generator\class2\obj\Debug\net8.0\class2.csproj.CoreCompileInputs.cache
+C:\Users\Cylia\meme_generator\class2\obj\Debug\net8.0\class2.dll
+C:\Users\Cylia\meme_generator\class2\obj\Debug\net8.0\refint\class2.dll
+C:\Users\Cylia\meme_generator\class2\obj\Debug\net8.0\class2.pdb
+C:\Users\Cylia\meme_generator\class2\obj\Debug\net8.0\class2.genruntimeconfig.cache
+C:\Users\Cylia\meme_generator\class2\obj\Debug\net8.0\ref\class2.dll

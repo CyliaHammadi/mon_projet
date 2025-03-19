@@ -1,0 +1,689 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" type="image/x-icon" href="{% static 'image/hippo.png' %}">
+  <title>Meme Personnalisé</title>
+  
+  <!-- Importation des polices depuis Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Freckle+Face&family=Luckiest+Guy&family=Permanent+Marker&family=Press+Start+2P&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.1/css/all.min.css" integrity="sha512-..." crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+  <!-- Inclusion de html2canvas -->
+  <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+  
+  <style>
+    /* Variables CSS pour faciliter la gestion des couleurs */
+    :root {
+      --primary-color: #6e7073;
+      --primary-hover: #750707;
+      --bg-overlay: rgba(0, 0, 0, 0.75);
+      --text-color: #fff;
+      --accent-color: #93476d;
+      --notification-bg: #28a745;
+    }
+    
+    /* Réinitialisation et styles globaux */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: Arial, sans-serif;
+      background: url("{% static 'image/pexel.jpg' %}") no-repeat center center fixed;
+      background-size: cover;
+      color: var(--text-color);
+      line-height: 1.6;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    /* Message d'en-tête */
+    #gallery-message {
+      background: rgba(255, 255, 255, 0.85);
+      color: #440404;
+      padding: 15px 20px;
+      text-align: center;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+    }
+    #gallery-message h1 {
+      margin-bottom: 5px;
+      font-size: 1.5rem;
+    }
+    
+    /* Barre des actions fixée en haut */
+    #function-bar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      z-index: 1000;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 20px;
+      
+      background: #fbf9ead9;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    #function-bar .text-options-bar,
+    #function-bar .action-buttons {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+    #function-bar label {
+      font-size: 1rem;
+      color: #000;
+    }
+    #function-bar input,
+    #function-bar select {
+      padding: 5px;
+      font-size: 1rem;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    #function-bar button,
+    #function-bar a {
+      background-color: #a79f9f;
+      color: white;
+      text-decoration: none;
+      padding: 10px 15px;
+      border-radius: 50px;
+      font-size: 16px;
+      font-weight: bold;
+      padding: 10px 20px;
+      margin: 0;
+      border: none;  
+      text-decoration: none;
+      cursor: pointer;
+
+    }
+    #function-bar button:hover,
+    #function-bar a:hover {
+      background-color: var(--primary-hover);
+    }
+    
+    /* Notification */
+    #notification {
+      position: fixed;
+      top: 2vh;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--notification-bg);
+      color: #fff;
+      padding: 10px 20px;
+      border-radius: 5px;
+      display: none;
+      z-index: 3000;
+      font-size: 1rem;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+    }
+    
+    /* Conteneur principal avec marge supérieure pour éviter la superposition */
+    #main-container {
+      flex: 1;
+      display: flex;
+      flex-direction: row;
+      width: 100vw;
+      padding: 80px 20px 20px; /* 80px en haut pour laisser la place à la function-bar */
+      gap: 20px;
+    }
+    
+    /* Panneau gauche : zone image */
+    #left-panel {
+      flex: 3;
+      padding: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+
+    
+    /* Conteneur pour l'image */
+    #image-container {
+      position: relative;
+      overflow: hidden;
+      border: 5px solid #fff;
+      
+      background: #000;
+      width: 100%;
+      height: auto;
+    }
+    #image-container img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      user-select: none;
+      pointer-events: none;
+    }
+    
+    /* Texte déplaçable */
+    .draggable-text {
+      position: absolute;
+      background: transparent;
+      padding: 5px;
+      cursor: move;
+      min-width: 50px;
+      min-height: 20px;
+      transform-origin: center;
+      transition: transform 0.2s;
+    }
+    .editable-text {
+      display: inline-block;
+      outline: none;
+      font-family: 'Bangers', sans-serif;
+      font-size: 2rem;
+      color: #fff;
+    }
+    
+    /* Boutons rotation et suppression */
+    .rotate-handle, .delete-handle {
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-size: 14px;
+      cursor: pointer;
+      user-select: none;
+      pointer-events: all;
+    }
+    .rotate-handle {
+      background: #666;
+      top: -10px;
+      right: -10px;
+    }
+    .delete-handle {
+      background: #9b0a0a;
+      top: -10px;
+      left: -10px;
+    }
+    
+    /* Fenêtre d'aperçu en temps réel */
+    #live-preview-window {
+      position: fixed;
+      top: 5vh;
+      right: 2vw;
+      width: 60vw;
+      max-height: 80vh;
+      background: #fff;
+      border: 2px solid #ccc;
+      padding: 10px;
+      box-shadow: 2px 2px 10px rgba(0,0,0,0.2);
+      z-index: 2000;
+      display: none;
+      overflow: auto;
+      border-radius: 5px;
+    }
+    #preview-close {
+      position: absolute;
+      top: 5px;
+      right: 5px;
+      width: 25px;
+      height: 25px;
+      background: #9b0a0a;
+      color: #fff;
+      text-align: center;
+      line-height: 25px;
+      cursor: pointer;
+      border-radius: 50%;
+      font-weight: bold;
+      z-index: 10;
+    }
+    #preview-container {
+      position: relative;
+    }
+    #live-preview canvas {
+      max-width: 100%;
+      max-height: 70vh; 
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+    #preview-actions {
+      top: 5px;
+      right: 5px;
+      display: flex;
+      gap: 5px;
+      z-index: 10;
+    }
+    #preview-actions button {
+      padding: 5px 10px;
+      font-size: 0.875rem;
+      background-color: transparent;
+      border: none;
+      color: var(--accent-color);
+      cursor: pointer;
+    }
+
+
+  </style>
+</head>
+<body>
+
+  <!-- Barre des actions fixée -->
+  <div id="function-bar">
+    <div class="text-options-bar">
+      <label for="text-color" title="Couleur"><i class="fas fa-palette"></i></label>
+      <input type="color" id="text-color" value="#000000">
+      
+      <label for="text-size" title="Taille"><i class="fas fa-text-height"></i></label>
+      <input type="number" id="text-size" value="16" min="10">
+      
+      <label for="text-font" title="Police"><i class="fas fa-font"></i></label>
+      <select id="text-font">
+        <option value="Arial">Arial</option>
+        <option value="Helvetica">Helvetica</option>
+        <option value="Times New Roman">Times New Roman</option>
+        <option value="Courier New">Courier New</option>
+        <option value="Georgia">Georgia</option>
+        <option value="Bangers">Manga (Bangers)</option>
+        <option value="Freckle Face">Manga Comique (Freckle Face)</option>
+        <option value="Luckiest Guy">Manga Fantaisie (Luckiest Guy)</option>
+        <option value="Permanent Marker">Shonen (Permanent Marker)</option>
+        <option value="Press Start 2P">Pixel (Press Start 2P)</option>
+      </select>
+      
+      <label for="text-shadow" title="Ombre"><i class="fas fa-adjust"></i></label>
+      <input type="checkbox" id="text-shadow">
+      
+      <label for="text-outline" title="Contour"><i class="fas fa-border-style"></i></label>
+      <input type="checkbox" id="text-outline">
+      
+      <label for="text-glow" title="Lueur"><i class="fas fa-lightbulb"></i></label>
+      <input type="checkbox" id="text-glow">
+      
+      <label for="text-underline" title="Soulignement"><i class="fas fa-underline"></i></label>
+      <input type="checkbox" id="text-underline">
+      
+      <label for="text-reflection" title="Réflexion"><i class="fas fa-arrows-alt-h"></i></label>
+      <input type="checkbox" id="text-reflection">
+
+      <button id="add-text-button" style="background-color: #ebcd56 !important; " title="Ajouter champ de texte">
+        <i class="fas fa-plus"></i>
+      </button>
+    </div>
+    
+    <div class="action-buttons">
+      <button id="toggle-preview" title="Afficher l'aperçu">
+        <i class="fas fa-eye"></i>
+      </button>
+      <button id="gallery-page-button" title="Accéder à la galerie">
+        <i class="fas fa-images"></i>
+      </button>
+      <button id="return-button" title="Retour">
+        <i class="fas fa-arrow-left"></i>
+      </button>
+    </div>
+  </div>
+  
+  <!-- Notification -->
+  <div id="notification"></div>
+  
+  <div id="main-container">
+    <!-- Panneau gauche : Image -->
+    <div id="left-panel">
+      {% if modif_image_url %}
+      <div id="image-container">
+        <img src="{{ modif_image_url }}" alt="Image modifiée">
+      </div>
+      {% else %}
+      <p>Aucune image trouvée.</p>
+      {% endif %}
+    </div>
+    
+  <!-- Fenêtre d'aperçu en temps réel -->
+  <div id="live-preview-window">
+    <div id="preview-container">
+      <div id="live-preview"></div>
+      <div id="preview-actions">
+        <button id="download-icon" title="Télécharger"><i class="fas fa-download"></i></button>
+        <!-- Bouton de partage modifié pour partager l'URL -->
+        <button id="share-icon" title="Partager"><i class="fas fa-share-alt"></i></button>
+        <button id="gallery-icon" title="Ajouter à la galerie"><i class="fas fa-images"></i></button>
+        <span id="preview-close">×</span>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+
+document.getElementById('return-button').addEventListener('click', function() {
+  window.history.back();
+}); 
+    document.getElementById('gallery-page-button').addEventListener('click', function() {
+  // Redirection vers la page de la galerie (adaptée à votre URL)
+  window.location.href = '/gallery/';
+  });
+
+    // Fonction de notification
+    function showNotification(message) {
+      const notification = document.getElementById('notification');
+      notification.innerText = message;
+      notification.style.display = 'block';
+      setTimeout(() => {
+        notification.style.display = 'none';
+      }, 3000);
+    }
+    
+    // Rendre un élément déplaçable
+    function makeDraggable(element) {
+      let isDragging = false;
+      let startX, startY;
+      let initialTranslateX = 0, initialTranslateY = 0;
+
+      element.addEventListener('mousedown', function(e) {
+        if (e.target.classList.contains('rotate-handle') || e.target.classList.contains('delete-handle')) return;
+        isDragging = true;
+        const style = window.getComputedStyle(element);
+        const matrix = new DOMMatrix(style.transform);
+        initialTranslateX = matrix.m41;
+        initialTranslateY = matrix.m42;
+        startX = e.clientX;
+        startY = e.clientY;
+        element.style.transition = 'none';
+      });
+
+      document.addEventListener('mousemove', function(e) {
+        if (isDragging) {
+          let dx = e.clientX - startX;
+          let dy = e.clientY - startY;
+          element.style.transform = `translate(${initialTranslateX + dx}px, ${initialTranslateY + dy}px)`;
+        }
+      });
+
+      document.addEventListener('mouseup', function() {
+        isDragging = false;
+        element.style.transition = '';
+      });
+    }
+
+    // Obtenir l'angle de rotation
+    function getRotationAngle(element) {
+      let st = window.getComputedStyle(element, null);
+      let tr = st.getPropertyValue('transform');
+      if (tr && tr !== 'none') {
+        let values = tr.split('(')[1].split(')')[0].split(',');
+        let a = values[0], b = values[1];
+        return Math.round(Math.atan2(b, a) * (180 / Math.PI));
+      }
+      return 0;
+    }
+    
+    // Rendre un élément rotatable
+    function makeRotatable(element, handle) {
+  let rotating = false;
+  let center = { x: 0, y: 0 };
+  let initialAngle = 0;
+  
+  // Au moment du mousedown sur le handle, on calcule le centre de l'élément
+  // et on stocke la translation actuelle pour la conserver pendant la rotation.
+  handle.addEventListener('mousedown', function(e) {
+    e.stopPropagation();
+    rotating = true;
+    
+    let rect = element.getBoundingClientRect();
+    center.x = rect.left + rect.width / 2;
+    center.y = rect.top + rect.height / 2;
+    
+    let dx = e.clientX - center.x;
+    let dy = e.clientY - center.y;
+    // On soustrait l'angle déjà appliqué pour démarrer la rotation à partir de la position actuelle.
+    initialAngle = Math.atan2(dy, dx) * (180 / Math.PI) - getRotationAngle(element);
+    
+    // Stocker la translation actuelle dans des data-attributes pour ne pas la perdre
+    let style = window.getComputedStyle(element);
+    let matrix = new DOMMatrix(style.transform);
+    element.dataset.translateX = matrix.m41;
+    element.dataset.translateY = matrix.m42;
+    
+    e.preventDefault();
+  });
+  
+  document.addEventListener('mousemove', function(e) {
+    if (rotating) {
+      let dx = e.clientX - center.x;
+      let dy = e.clientY - center.y;
+      // Calcul de l'angle courant en fonction du mouvement de la souris
+      let angle = Math.atan2(dy, dx) * (180 / Math.PI) - initialAngle;
+      
+      // Récupérer la translation stockée (ou 0 si non défini)
+      let tx = element.dataset.translateX || 0;
+      let ty = element.dataset.translateY || 0;
+      
+      // Appliquer la translation ET la rotation simultanément
+      element.style.transform = `translate(${tx}px, ${ty}px) rotate(${angle}deg)`;
+    }
+  });
+  
+  document.addEventListener('mouseup', function() {
+    rotating = false;
+  });
+}
+    
+    // Ajout d'un champ de texte
+    document.getElementById('add-text-button').addEventListener('click', function() {
+      let textColor = document.getElementById('text-color').value;
+      let textSize = document.getElementById('text-size').value;
+      let textFont = document.getElementById('text-font').value;
+      let shadow = document.getElementById('text-shadow').checked;
+      let outline = document.getElementById('text-outline').checked;
+      let glow = document.getElementById('text-glow').checked;
+      let underline = document.getElementById('text-underline').checked;
+      let reflection = document.getElementById('text-reflection').checked;
+      
+      let newText = document.createElement('div');
+      newText.classList.add('draggable-text');
+      newText.style.left = '10px';
+      newText.style.top = '10px';
+      
+      let editableSpan = document.createElement('span');
+      editableSpan.classList.add('editable-text');
+      editableSpan.contentEditable = true;
+      editableSpan.innerText = 'Nouveau texte';
+      editableSpan.style.color = textColor;
+      editableSpan.style.fontSize = textSize + 'px';
+      editableSpan.style.fontFamily = textFont;
+      
+      let shadows = [];
+      if(shadow) shadows.push('2px 2px 4px rgba(0,0,0,0.5)');
+      if(glow) shadows.push('0 0 8px ' + textColor);
+      if(shadows.length){
+          editableSpan.style.textShadow = shadows.join(', ');
+      }
+      if(underline){
+          editableSpan.style.textDecoration = 'underline';
+      }
+      if(outline){
+          editableSpan.style.webkitTextStroke = '1px black';
+      }
+      if(reflection){
+          editableSpan.style.webkitBoxReflect = 'below 0px linear-gradient(transparent, rgba(255,255,255,0.5))';
+      }
+      
+      newText.appendChild(editableSpan);
+      
+      let rotateHandle = document.createElement('div');
+      rotateHandle.classList.add('rotate-handle');
+      newText.appendChild(rotateHandle);
+      
+      let deleteHandle = document.createElement('div');
+      deleteHandle.classList.add('delete-handle');
+      deleteHandle.innerText = '×';
+      deleteHandle.addEventListener('click', function(e){
+          e.stopPropagation();
+          newText.remove();
+      });
+      newText.appendChild(deleteHandle);
+      
+      document.getElementById('image-container').appendChild(newText);
+      makeDraggable(newText);
+      makeRotatable(newText, rotateHandle);
+    });
+    
+    // Fonction pour ajouter l'image à la galerie
+    function addToGallery() {
+      if (!confirm("Êtes-vous sûr d'ajouter l'image à la galerie ? Car vous ne pourrez pas la supprimer.")) {
+        return;
+      }
+      let container = document.getElementById('image-container');
+      let clone = container.cloneNode(true);
+      clone.querySelectorAll('.rotate-handle, .delete-handle').forEach(el => el.remove());
+      clone.querySelectorAll('.draggable-text').forEach(box => box.style.border = 'none');
+      clone.style.position = 'absolute';
+      clone.style.top = '-9999px';
+      document.body.appendChild(clone);
+      html2canvas(clone).then(function(canvas) {
+        let dataURL = canvas.toDataURL('image/png');
+        fetch('/gallery/add/', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token }}'
+          },
+          body: JSON.stringify({ image: dataURL })
+        })
+        .then(response => response.json())
+        .then(data => {
+          showNotification("L'image a bien été enregistrée");
+          document.body.removeChild(clone);
+        })
+        .catch(error => {
+          console.error('Erreur:', error);
+          document.body.removeChild(clone);
+        });
+      });
+    }
+    
+    // Téléchargement du meme
+    function downloadMeme() {
+      let container = document.getElementById('image-container');
+      let clone = container.cloneNode(true);
+      clone.querySelectorAll('.rotate-handle, .delete-handle').forEach(el => el.remove());
+      clone.querySelectorAll('.draggable-text').forEach(box => box.style.border = 'none');
+      clone.style.position = 'absolute';
+      clone.style.left = '-9999px';
+      document.body.appendChild(clone);
+      html2canvas(clone).then(function(canvas) {
+        let dataURL = canvas.toDataURL('image/png');
+        let link = document.createElement('a');
+        link.href = dataURL;
+        link.download = 'meme.png';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        document.body.removeChild(clone);
+      });
+    }
+    
+    // Partage du meme via URL (fonction modifiée)
+    function shareMemeLink() {
+      // Récupérer l'URL de l'image affichée dans le conteneur
+      let imageUrl = document.getElementById('image-container').querySelector('img').src;
+      if (navigator.share) {
+        navigator.share({
+          title: "Mon Meme Personnalisé",
+          text: "Regardez mon meme que j'ai créé !",
+          url: imageUrl
+        })
+        .then(() => console.log("Lien partagé"))
+        .catch(err => console.error("Erreur lors du partage :", err));
+      } else {
+        // Fallback : prompt pour copier le lien
+        prompt("Votre navigateur ne supporte pas le partage direct. Copiez ce lien :", imageUrl);
+      }
+    }
+    
+
+    
+    function updateLivePreview() {
+  let container = document.getElementById('image-container');
+  let clone = container.cloneNode(true);
+
+  // Supprimer les éléments non désirés
+  clone.querySelectorAll('.rotate-handle, .delete-handle').forEach(el => el.remove());
+  clone.querySelectorAll('.draggable-text').forEach(box => box.style.border = 'none');
+
+  // Pour chaque texte déplaçable, récupérer le translate appliqué, l'ajouter à left/top et réinitialiser transform
+  clone.querySelectorAll('.draggable-text').forEach(function(el) {
+    let style = window.getComputedStyle(el);
+    let transform = style.transform;
+    if (transform && transform !== 'none') {
+      // Transformation sous forme "matrix(a, b, c, d, tx, ty)"
+      let values = transform.match(/matrix\((.+)\)/);
+      if (values) {
+        let parts = values[1].split(', ');
+        let tx = parseFloat(parts[4]);
+        let ty = parseFloat(parts[5]);
+        // Récupérer left et top actuels (en pixels)
+        let left = parseFloat(style.left) || 0;
+        let top = parseFloat(style.top) || 0;
+        // Ajuster left/top en y ajoutant la translation
+        el.style.left = (left + tx) + 'px';
+        el.style.top = (top + ty) + 'px';
+        // Réinitialiser la transformation
+        el.style.transform = 'none';
+      }
+    }
+  });
+
+  // Pour conserver les dimensions du conteneur original
+  clone.style.width = container.offsetWidth + 'px';
+  clone.style.height = container.offsetHeight + 'px';
+  clone.style.position = 'absolute';
+  clone.style.top = '-9999px';
+  clone.style.left = '-9999px';
+  document.body.appendChild(clone);
+
+  html2canvas(clone, { scale: 1 }).then(function(canvas) {
+    let previewContainer = document.getElementById('live-preview');
+    previewContainer.innerHTML = '';
+    canvas.style.width = clone.offsetWidth + 'px';
+    canvas.style.height = clone.offsetHeight + 'px';
+    previewContainer.appendChild(canvas);
+    document.body.removeChild(clone);
+  });
+}
+
+    
+    document.getElementById('toggle-preview').addEventListener('click', function() {
+      let previewWindow = document.getElementById('live-preview-window');
+      if (previewWindow.style.display === 'none' || previewWindow.style.display === '') {
+        updateLivePreview();
+        previewWindow.style.display = 'block';
+      } else {
+        previewWindow.style.display = 'none';
+      }
+    });
+    
+    document.getElementById('preview-close').addEventListener('click', function() {
+      document.getElementById('live-preview-window').style.display = 'none';
+    });
+    
+    document.getElementById('download-icon').addEventListener('click', downloadMeme);
+    // Lier le bouton de partage à la fonction shareMemeLink
+    document.getElementById('share-icon').addEventListener('click', shareMemeLink);
+    document.getElementById('gallery-icon').addEventListener('click', addToGallery);
+  </script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+ 
+ 
+ 
+ 

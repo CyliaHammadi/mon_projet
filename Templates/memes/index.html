@@ -1,0 +1,107 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" type="image/x-icon" href="{% static 'image/hippo.png' %}">
+  <title>Création de Meme - Meme Maker</title>
+  <style>
+    /* Réinitialisation et boîtes */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    /* Style du body */
+    body {
+      font-family: Arial, sans-serif;
+      background: url("{% static 'image/pexel.jpg' %}") no-repeat center center fixed;
+      background-size: cover;
+      color: #fff;
+      line-height: 1.6;
+    }
+    /* Conteneur principal centré avec fond semi-transparent */
+    .content {
+      max-width: 600px;
+      margin: 80px auto;
+      padding: 30px;
+      background: rgba(0, 0, 0, 0.65);
+      border-radius: 10px;
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.7);
+      text-align: center;
+    }
+    /* Titre principal */
+    h1 {
+      font-size: 2.5rem;
+      margin-bottom: 20px;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+    }
+    /* Paragraphes */
+    p {
+      font-size: 1.2rem;
+      margin-bottom: 20px;
+    }
+    /* Style du formulaire */
+    form p {
+      
+      text-align: center;
+      margin-bottom: 20px;
+      font-size: 1rem;
+    }
+    form  h3 {
+      color: #fadb9f;
+    }
+    form label {
+      font-weight: bold;
+    }
+    /* Bouton d'envoi */
+    .btn {
+      display: inline-block;
+      background-color: #caa6be;
+      color: #1b1010;
+      border: none;
+      padding: 10px 20px;
+      font-size: 1.1rem;
+      border-radius: 5px;
+      cursor: pointer;
+      width: 50%;
+      margin-top: 20px;
+     
+      letter-spacing: 1px;
+    }
+    .btn:hover {
+      background-color: #b59aa7;
+    }
+    /* Lien vers la galerie */
+    a {
+      display: block;
+      margin-top: 15px;
+      color: #fadb9f;
+      text-decoration: underline;
+      font-size: 1rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="content">
+    <p>Bienvenue sur Meme Maker ! Créez vos memes facilement en téléchargeant une image et en ajoutant votre texte. Laissez libre cours à votre créativité !</p>
+    <h1>Créer un Meme</h1>
+    <form action="." method="post" enctype="multipart/form-data">
+      {% csrf_token %}
+      <p>
+        <h3>Insérer une image :</h3>
+        &emsp;&emsp;&emsp;&emsp;&emsp;{{ form.image }}
+      </p>
+      <button type="submit" class="btn">Upload</button>
+    </form>
+    <a href="{% url 'gallery' %}">Voir la galerie des mèmes</a>
+  </div>
+</body>
+</html>
+
+
+
+    
+   
+

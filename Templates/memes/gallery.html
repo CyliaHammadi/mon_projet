@@ -1,0 +1,172 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.1/css/all.min.css" integrity="sha512-..." crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <link rel="icon" type="image/x-icon" href="{% static 'image/hippo.png' %}">
+  <meta charset="UTF-8">
+  <title>Galerie des Mèmes</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: url("{% static 'image/pexel.jpg' %}") no-repeat center center fixed;
+      background-size: cover;
+      color: #343032;
+      line-height: 1.6;
+    }
+    .header-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 20px;
+  width: 100%;
+}
+
+h1 {
+  flex-grow: 1;
+  text-align: center;
+  margin: 0;
+}
+
+.back-button {
+  background-color: #343032;
+  color: white;
+  text-decoration: none;
+  padding: 10px 15px;
+  border-radius: 50px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.back-button:hover {
+  background-color: #750707;
+}
+
+
+    .gallery-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      
+    }
+    .gallery-item {
+      background: rgba(252, 253, 242, 0.95);
+      width: 220px; /* Largeur fixe pour l'encart */
+      border: 1px solid #500202;
+      padding: 5px;
+      text-align: center;
+    }
+    .gallery-item img {
+      width: 200px;  /* Taille fixe de l'image */
+      height: 200px; /* Taille fixe de l'image */
+      object-fit: cover; /* Permet de recadrer l'image pour bien remplir l'espace */
+      display: block;
+      cursor: pointer;
+      margin: 0 auto;
+    }
+    .gallery-item p {
+      margin: 5px 0 10px;
+      font-size: 16px;
+      color: #333;
+    }
+    .download-button {
+      display: inline-block;
+      padding: 5px 10px;
+      color: #960909;
+      text-decoration: none;
+      border-radius: 5px;
+    }
+
+    /* Modal (lightbox) styles */
+    #modal {
+      display: none;
+      position: fixed;
+      z-index: 10000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background-color: rgba(0,0,0,0.9);
+    }
+    #modal img {
+      margin: auto;
+      display: block;
+      max-width: 90%;
+      max-height: 90%;
+      margin: 20px auto 0 auto;
+    }
+    #modal-close {
+      position: absolute;
+      top: 20px;
+      right: 35px;
+      color: #fff;
+      font-size: 40px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div class="header-container">
+    <h1>Galerie des Mèmes</h1>
+    <a href="javascript:history.back()" title="Retour"class="back-button">
+      <i class="fas fa-arrow-left"></i> 
+    </a>
+  </div>
+  
+  {% if gallery_images %}
+    <div class="gallery-container">
+      {% for meme in gallery_images %}
+        <div class="gallery-item">
+          {% if meme.modif_image %}
+            <img src="{{ meme.modif_image.url }}" alt="Mème" data-caption="{{ meme.caption }}">
+            <a class="download-button" title="Télécharger" href="{{ meme.modif_image.url }}" download="{{ meme.caption|default:'meme' }}.png">
+              <i class="fas fa-download"></i>
+            </a>
+          {% else %}
+            <img src="{{ meme.image.url }}" alt="Mème" data-caption="{{ meme.caption }}">
+            <a class="download-button" title="Télécharger" href="{{ meme.image.url }}" download="{{ meme.caption|default:'meme' }}.png">
+              <i class="fas fa-download"></i>
+            </a>
+          {% endif %}
+          <p>{{ meme.caption }}</p>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p>Aucun mème créé pour le moment.</p>
+  {% endif %}
+  
+  <!-- Modal pour afficher l'image en grand -->
+  <div id="modal">
+    <span id="modal-close">&times;</span>
+    <img id="modal-img" src="" alt="Grande image">
+  </div>
+  
+  <script>
+    // Ouvre le modal en cliquant sur une image de la galerie
+    document.querySelectorAll('.gallery-item img').forEach(img => {
+      img.addEventListener('click', function() {
+        document.getElementById('modal').style.display = "block";
+        document.getElementById('modal-img').src = this.src;
+      });
+    });
+    
+    // Ferme le modal lorsque l'utilisateur clique sur la croix
+    document.getElementById('modal-close').addEventListener('click', function() {
+      document.getElementById('modal').style.display = "none";
+    });
+    
+    // Ferme le modal si l'utilisateur clique en dehors de l'image
+    document.getElementById('modal').addEventListener('click', function(e) {
+      if(e.target === this) {
+        this.style.display = "none";
+      }
+    });
+  </script>
+</body>
+
+</html>
+
