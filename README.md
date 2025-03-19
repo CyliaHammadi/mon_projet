@@ -1,1 +1,1 @@
-# Développez un générateur de mèmes en ligne 
+# Générateur de mèmes 
