@@ -65,10 +65,13 @@
       justify-content: space-between;
       align-items: center;
       padding: 10px 20px;
-      
       background: #fbf9ead9;
-      flex-wrap: wrap;
       gap: 10px;
+      display: flex;
+      flex-wrap: nowrap; /* Empêche les éléments de passer à la ligne */
+      justify-content: space-between;
+      overflow-x: auto; /* Ajoute un défilement horizontal si besoin */
+      white-space: nowrap;
     }
     #function-bar .text-options-bar,
     #function-bar .action-buttons {
@@ -87,7 +90,18 @@
       border: 1px solid #ccc;
       border-radius: 4px;
     }
-    #function-bar button,
+    #function-bar button{
+      background-color: #a79f9f;
+      color: white;
+      
+      padding: 10px 20px;
+      border-radius: 50px;
+      font-size: 16px;
+      font-weight: bold;
+      border: none;  
+      cursor: pointer;
+
+    }
     #function-bar a {
       background-color: #a79f9f;
       color: white;
@@ -209,46 +223,74 @@
     }
     
     /* Fenêtre d'aperçu en temps réel */
-    #live-preview-window {
-      position: fixed;
-      top: 5vh;
-      right: 2vw;
-      width: 60vw;
-      max-height: 80vh;
-      background: #fff;
-      border: 2px solid #ccc;
-      padding: 10px;
-      box-shadow: 2px 2px 10px rgba(0,0,0,0.2);
-      z-index: 2000;
-      display: none;
-      overflow: auto;
-      border-radius: 5px;
-    }
-    #preview-close {
-      position: absolute;
-      top: 5px;
-      right: 5px;
-      width: 25px;
-      height: 25px;
-      background: #9b0a0a;
-      color: #fff;
-      text-align: center;
-      line-height: 25px;
-      cursor: pointer;
-      border-radius: 50%;
-      font-weight: bold;
-      z-index: 10;
-    }
-    #preview-container {
-      position: relative;
-    }
-    #live-preview canvas {
-      max-width: 100%;
-      max-height: 70vh; 
-      border: 1px solid #ccc;
-      border-radius: 5px;
-    }
+    /* Fenêtre d'aperçu en temps réel */
+/* Fenêtre d'aperçu en temps réel */ 
+/* Fenêtre d'aperçu en temps réel */
+
+#live-preview-window {
+  position: fixed;
+  top: 5vh;
+  right: 2vw;
+  width: 35vw; /* Ajustable */
+  height: 70vh; /* Ajustable */
+  background: #fff;
+  border: 2px solid #ccc;
+  padding: 10px;
+  box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.2);
+  z-index: 2000;
+  display: none;
+  border-radius: 5px;
+  
+  align-items: center;
+  justify-content: center;
+  overflow: hidden; /* Empêche tout dépassement */
+}
+
+#preview-close {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  width: 25px;
+  height: 25px;
+  background: #9b0a0a;
+  color: #fff;
+  text-align: center;
+  line-height: 25px;
+  cursor: pointer;
+  border-radius: 50%;
+  font-weight: bold;
+  z-index: 10;
+}
+
+#preview-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#live-preview canvas {
+  max-width: 100%; /* Ne dépasse jamais la largeur de la fenêtre */
+  max-height: 100%; /* Ne dépasse jamais la hauteur de la fenêtre */
+  width: auto; /* Garde les proportions */
+  height: auto; /* Garde les proportions */
+  object-fit: contain; /* Empêche le rognage */
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  display: block;
+}
+
+
+
+
+
+
     #preview-actions {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
       top: 5px;
       right: 5px;
       display: flex;
@@ -586,25 +628,50 @@ document.getElementById('return-button').addEventListener('click', function() {
     
     // Partage du meme via URL (fonction modifiée)
     function shareMemeLink() {
-      // Récupérer l'URL de l'image affichée dans le conteneur
-      let imageUrl = document.getElementById('image-container').querySelector('img').src;
-      if (navigator.share) {
+  let container = document.getElementById('image-container');
+  let clone = container.cloneNode(true);
+
+  // Supprimer les bordures et les éléments inutiles
+  clone.querySelectorAll('.rotate-handle, .delete-handle').forEach(el => el.remove());
+  clone.querySelectorAll('.draggable-text').forEach(box => box.style.border = 'none');
+
+  clone.style.position = 'absolute';
+  clone.style.left = '-9999px';
+  document.body.appendChild(clone);
+
+  html2canvas(clone).then(function(canvas) {
+    let dataURL = canvas.toDataURL('image/png');
+
+    if (navigator.share) {
+      canvas.toBlob(blob => {
+        let file = new File([blob], "meme.png", { type: "image/png" });
+
         navigator.share({
           title: "Mon Meme Personnalisé",
           text: "Regardez mon meme que j'ai créé !",
-          url: imageUrl
+          files: [file] // Partage du fichier généré
         })
-        .then(() => console.log("Lien partagé"))
+        .then(() => console.log("Meme partagé avec succès"))
         .catch(err => console.error("Erreur lors du partage :", err));
-      } else {
-        // Fallback : prompt pour copier le lien
-        prompt("Votre navigateur ne supporte pas le partage direct. Copiez ce lien :", imageUrl);
-      }
+      }, "image/png");
+    } else {
+      // Fallback : afficher l'image et copier l'URL
+      let link = document.createElement('a');
+      link.href = dataURL;
+      link.download = 'meme.png';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      alert("Votre navigateur ne supporte pas le partage direct. L'image a été téléchargée.");
     }
-    
+
+    document.body.removeChild(clone);
+  });
+}
+
 
     
-    function updateLivePreview() {
+  function updateLivePreview() {
   let container = document.getElementById('image-container');
   let clone = container.cloneNode(true);
 
@@ -675,6 +742,19 @@ document.getElementById('return-button').addEventListener('click', function() {
   </script>
 </body>
 </html>
+
+
+
+
+
+
+
+
+ 
+ 
+ 
+ 
+
 
 
 
